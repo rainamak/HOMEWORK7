@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jade Delight</title>
+    <style type="text/css"> 
+        *
+        body,html{
+            background-color: #FFEFD5; 
+            align-content: center;
+
+        }
+        
+        h1{
+            
+            font-family: "Roboto", cursive;
+            text-decoration: underline; 
+        }
+        
+        input[type=submit]{
+            background: #8FBC8F; 
+            width: auto; 
+            height: auto; 
+            padding: 5px 5px; 
+            text-align: center; 
+            text-transform: uppercase;
+            color: #000; 
+            font-size: 15px; 
+            cursor: pointer;
+            font-weight: 10px; 
+        }
+        
+        #notif {
+            font-family:"Courier New", cursive; 
+            color:#DC143C; 
+
+        }
+        
+    
+    </style>
+</head>
+
+<body>
+<script language="javascript">
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 5.25),
+	new MenuItem("Moo Shi Chicken", 6.5),
+	new MenuItem("Fried Rice", 2.35)
+);
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+</script>
+
+<h1>Jade Delight</h1>
+<form>
+
+<p>First Name: <input type="text"  name='fname' /></p>
+<p>Last Name*:  <input type="text"  name='lname' id = 'lname'/></p>
+<p>Street: <input type="text"  name='street' id='street' /></p>
+<p>City: <input type="text"  name='city' id='city' /></p>
+<p>Phone*(ex:1234567890): <input type="text"  name='phone' id='phone' /></p> <p id="error"> &nbsp;</p>
+    
+
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked" id="pickup"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery' id="delivery"/>
+	Delivery
+</p>
+    
+    
+<table border="0" cellpadding="3" id="menu">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+    
+     
+<script language="javascript">
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr><td>";
+	  s += makeSelect("quan" + i, 0, 10);
+	  s += "</td><td>" + menuItems[i].name + "</td>";
+	  s += "<td> $ " + menuItems[i].cost.toFixed(2) + "</td>";
+	  s += "<td>$<input type='text' name='cost' value= /> </td></tr>";
+  }
+  document.writeln(s);
+    
+
+   
+</script>
+    
+
+<!-- updating costs --> 
+<script languauge="javascript">
+    
+    /*updating total cost box, subtotal, tax, total*/ 
+    for(var i=0; i<menuItems.length; i++){
+        document.getElementsByName("quan"+i)[0].onchange=function(){updateTotals()};       
+    }
+    
+    
+    function updateTotals(){
+        var beforeTax=0, totalTax=0, afterTax=0; 
+        beforeTax=parseInt(beforeTax); 
+        
+        /*redoes total calculations each on change*/ 
+        for(var i=0; i<menuItems.length;i++){
+            taxAmount=0.0625; 
+            var x = document.getElementsByName("quan"+i)[0].value; 
+            x = parseInt(x); 
+            x = x*menuItems[i].cost;
+            beforeTax=beforeTax+x; 
+            totalTax=beforeTax*taxAmount; 
+            afterTax=beforeTax+totalTax;  
+            x = x.toFixed(2); 
+            
+           /*updates total cost column*/  document.getElementById("menu").rows[i+1].cells[3].children[0].value = x; 
+            
+        }
+        
+        
+       /*update final values, rounding to 2 decimal places*/ document.getElementById("subtotal").value=beforeTax.toFixed(2); 
+        document.getElementById("tax").value=totalTax.toFixed(2); 
+        
+        document.getElementById("total").value=afterTax.toFixed(2);
+    }
+    
+
+</script>
+
+    
+
+<script language ="javascript"> 
+    
+ /*validating the form upon clicking submit*/
+    
+    function validateNumber(enteredNumber){
+        /*checking if entry is all numbers*/ 
+        var numbers = /^[0-9]+$/; 
+        if(!enteredNumber.match(numbers)){
+            return false; 
+        }
+        
+        /*converting to string*/ 
+        enteredNumber.toString().length; 
+        if(enteredNumber.length!=10){
+            return false; 
+        }       
+    }
+    
+     /*checking whether delivery or pickup selected*/ 
+    function getMethod(){ 
+        var method; 
+        if(document.getElementById("delivery").checked){
+            method="delivery";
+        }else if(document.getElementById("pickup").checked){
+            method="pickup"; 
+        }
+        return method; 
+    }
+    
+    
+    function getEstimatedTime(){
+       /*determining prep minutes*/ 
+        method = getMethod(); 
+        var prepTime; 
+        if(method=="pickup"){
+            prepTime=15; 
+        }else if(method=="delivery"){
+            prepTime=30; 
+        }
+        
+        /*getting current time*/
+        var d = new Date(); 
+        hour = d.getHours(); 
+        minute = d.getMinutes(); 
+        totalMinutes=minute+prepTime; 
+        hour+=Math.floor(totalMinutes/60); 
+        minute=Math.round(totalMinutes%60); 
+        
+        /*determining AM or PM*/ 
+        var x; 
+        if(hour>12){
+            hour=hour-12; 
+            x = "PM"; 
+        }else{
+            x="AM"; 
+        }
+        
+        /*adding 0 to minute if single digit*/ 
+        minute=minute.toString(); 
+        if(minute.length<2){
+            minute='0'+minute; 
+        }
+        
+        /*return ready time*/ 
+        return(hour+":"+minute+x); 
+       
+    }
+    
+    /*checking whether address is entered, using getmethod() to execute only if delivery is checked*/ 
+    function checkStreetandCity(){
+        var x = true; 
+        method=getMethod(); 
+        if(method=="delivery"){
+            var street = document.getElementById('street').value; 
+            var city = document.getElementById('city').value; 
+            if(street=="" || city==""){
+                x = false;  
+            }  
+        }
+        return x;  
+    }
+    
+    function validate(){ 
+        var number = document.getElementById("phone").value;
+        var lastName = document.getElementById("lname").value;
+        var method = getMethod(); 
+        var address = checkStreetandCity(); 
+        var readyTime = getEstimatedTime(); 
+        var total = document.getElementById("total").value; 
+        
+        /*checking number*/ 
+        isNumber = validateNumber(number); 
+        if(isNumber==false){
+            alert("Please enter a valid phone number"); 
+            /*checking last name*/ 
+        }else if(lastName==""){
+            alert("Please enter a last name");
+            /*validating city and street*/ 
+        }else if(address==false){
+            alert("A street address and city is required"); 
+        }else{
+            var estimate; 
+            if(method=="delivery"){ 
+                estimate = "Your estimated delivery time is: " + readyTime; 
+            }
+            if(method=="pickup"){
+                 estimate="Your order will be ready at: " + readyTime; 
+            }
+            
+            document.getElementById("notif").innerHTML= "Thank you for your order!" + "</br>" + estimate + "</br>" + "Your total is: $" + total; 
+            
+           
+            }
+        
+         
+        
+        return false; 
+    }   
+    </script>
+    
+
+
+     
+</table>
+<p>Subtotal: 
+   $<input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p>Mass tax 6.25%:
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p>Total: $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "submit" value = "Submit Order" onclick = "return validate()"/>
+
+<p> 
+
+<div id="notif"></div>
+</p>
+
+</form>
+</body>
+</html>
